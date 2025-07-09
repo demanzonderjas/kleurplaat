@@ -24,7 +24,17 @@ function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0, overflow: 'hidden', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10 }}>
+      <div style={{
+        position: 'absolute',
+        top: 24,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 10,
+        background: 'rgba(255,255,255,0.7)',
+        borderRadius: 8,
+        padding: '8px 16px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+      }}>
         <ImageUploader onImageSelected={handleImageSelected} />
       </div>
       <SceneCanvas images={processedImages} fillScreen onProcessed={handleProcessed} uploadedImage={uploadedImage} />
