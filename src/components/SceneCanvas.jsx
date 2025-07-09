@@ -75,8 +75,8 @@ function createObjState(canvas, objW, objH) {
     };
 }
 
-const BUBBLE_SOUND = "https://cdn.freesound.org/previews/193/193169_84709-lq.mp3";
-const BOUNCE_SOUND = "https://cdn.freesound.org/previews/329/329944_5622625-lq.mp3";
+const BUBBLE_SOUND = "https://cdn.freesound.org/previews/456/456567_5052309-lq.mp3";
+const BOUNCE_SOUND = "https://cdn.freesound.org/previews/456/456567_5052309-lq.mp3";
 const DEFAULT_BACKGROUND =
     "https://static.vecteezy.com/system/resources/thumbnails/003/439/678/original/cartoon-background-underwater-sea-life-free-video.jpg";
 
@@ -99,7 +99,9 @@ const SceneCanvas = ({
     const animationRef = useRef();
     const objStates = useRef([]); // array of animation states
     const bubbleAudioRef = useRef();
+    const lastBubbleSoundTimeRef = useRef(0);
     const bounceAudioRef = useRef();
+    const lastBounceSoundTimeRef = useRef(0);
     const draggingRef = useRef({ index: null, offsetX: 0, offsetY: 0 });
     const [draggedIndex, setDraggedIndex] = React.useState(null);
     // Track if a drag occurred to prevent duplicate on drag
@@ -524,18 +526,19 @@ const SceneCanvas = ({
         let running = true;
 
         function playBubble() {
-            if (bubbleAudioRef.current) {
-                // Clone the audio node to allow overlapping sounds
-                const bubble = bubbleAudioRef.current.cloneNode();
-                bubble.volume = bubbleAudioRef.current.volume;
-                bubble.play().catch(() => {});
+            const now = Date.now();
+            if (bubbleAudioRef.current && now - lastBubbleSoundTimeRef.current > 1000) {
+                lastBubbleSoundTimeRef.current = now;
+                bubbleAudioRef.current.currentTime = 0;
+                bubbleAudioRef.current.play().catch(() => {});
             }
         }
         function playBounce() {
-            if (bounceAudioRef.current) {
-                const bounce = bounceAudioRef.current.cloneNode();
-                bounce.volume = bounceAudioRef.current.volume;
-                bounce.play().catch(() => {});
+            const now = Date.now();
+            if (bounceAudioRef.current && now - lastBounceSoundTimeRef.current > 1000) {
+                lastBounceSoundTimeRef.current = now;
+                bounceAudioRef.current.currentTime = 0;
+                bounceAudioRef.current.play().catch(() => {});
             }
         }
 
@@ -545,9 +548,9 @@ const SceneCanvas = ({
             // --- Menu bounds for collision ---
             // Sticker palette (bottom left)
             const stickerMenuRect = {
-                x: menuSideMargin,
+                x: isMobile ? 0 : menuSideMargin,
                 y: height - stickerMenuBottom - stickerMenuHeight,
-                w: width - 2 * menuSideMargin,
+                w: isMobile ? width : width - 2 * menuSideMargin,
                 h: stickerMenuHeight,
             };
             // Effects menu (left, above sticker palette)
@@ -617,21 +620,7 @@ const SceneCanvas = ({
                 bouncedY = true;
             }
             // --- Bounce off sticker palette ---
-            if (
-                state.x < stickerMenuRect.x + stickerMenuRect.w &&
-                state.x + objW > stickerMenuRect.x &&
-                state.y < stickerMenuRect.y + stickerMenuRect.h &&
-                state.y + objH > stickerMenuRect.y
-            ) {
-                // Bounce horizontally
-                if (state.x + objW / 2 < stickerMenuRect.x + stickerMenuRect.w / 2) {
-                    state.x = stickerMenuRect.x - objW;
-                } else {
-                    state.x = stickerMenuRect.x + stickerMenuRect.w;
-                }
-                state.vx *= -1;
-                bouncedX = true;
-            }
+            // (no special mobile clamp/bounce for sticker menu)
             // --- Bounce off effects menu ---
             if (
                 state.x < effectsMenuRect.x + effectsMenuRect.w &&
@@ -684,6 +673,19 @@ const SceneCanvas = ({
             if (!state.trail) state.trail = [];
             state.trail.push({ x: state.x + objW / 2, y: state.y + objH / 2, angle: state.angle });
             if (state.trail.length > 18) state.trail.shift();
+
+            // After all other bounces, on mobile, never allow object below sticker menu
+            if (isMobile) {
+                const stickerMenuTop = stickerMenuRect.y;
+                if (
+                    state.x < stickerMenuRect.x + stickerMenuRect.w &&
+                    state.x + objW > stickerMenuRect.x &&
+                    state.y + objH > stickerMenuTop
+                ) {
+                    state.y = stickerMenuTop - objH;
+                    state.vy *= -1;
+                }
+            }
         }
 
         function animateAllObjects(objStatesArr, objW, objH) {
