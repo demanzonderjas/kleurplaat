@@ -1006,8 +1006,12 @@ const SceneCanvas = ({
     const effectsMenuHeight = 60; // Height of the effects menu button
 
     // Calculate menu positions so they never stack
-    const effectsMenuBottom = bottomMargin;
+    const effectsMenuExtraMargin = isMobile ? 48 : 0; // Move up on mobile
+    const effectsMenuBottom = bottomMargin + effectsMenuExtraMargin;
     const stickerMenuBottom = effectsMenuBottom + effectsMenuGap + effectsMenuHeight;
+
+    // Margin for left/right, matching bgMenuLeft from App.jsx
+    const menuSideMargin = isMobile ? 8 : 18;
 
     // Sticker palette (simple emoji for now)
     const STICKERS = [
@@ -1200,7 +1204,8 @@ const SceneCanvas = ({
             <div
                 style={{
                     position: "absolute",
-                    left: 24,
+                    left: menuSideMargin,
+                    right: menuSideMargin,
                     bottom: effectsMenuBottom,
                     zIndex: 20,
                     display: "flex",
@@ -1247,7 +1252,8 @@ const SceneCanvas = ({
             <div
                 style={{
                     position: "absolute",
-                    left: 24,
+                    left: menuSideMargin,
+                    right: menuSideMargin,
                     bottom: stickerMenuBottom,
                     zIndex: 10,
                     display: "flex",
