@@ -1006,7 +1006,7 @@ const SceneCanvas = ({
     const effectsMenuHeight = 60; // Height of the effects menu button
 
     // Calculate menu positions so they never stack
-    const effectsMenuExtraMargin = isMobile ? 48 : 0; // Move up on mobile
+    const effectsMenuExtraMargin = isMobile ? 63 : 0; // Move up more on mobile
     const effectsMenuBottom = bottomMargin + effectsMenuExtraMargin;
     const stickerMenuBottom = effectsMenuBottom + effectsMenuGap + effectsMenuHeight;
 
