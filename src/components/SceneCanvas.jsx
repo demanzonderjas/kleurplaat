@@ -126,7 +126,7 @@ const SceneCanvas = ({
     const effectParticles = useRef([]); // array of {x, y, vx, vy, ...}
     // Sticker drag state (move this up)
     const [draggingSticker, setDraggingSticker] = React.useState(null); // { sticker, x, y }
-    // Add a flag to freeze animation when dragging a sticker
+    // Add a flag to freeze animation when dragging a sticker (not when failedSticker is set)
     const freezeObjects = !!draggingSticker;
     // Sticker attach sound
     const STICKER_ATTACH_SOUND = "https://cdn.freesound.org/previews/590/590536_129727-lq.mp3";
