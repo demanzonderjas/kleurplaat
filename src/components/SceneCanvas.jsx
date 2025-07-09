@@ -384,7 +384,8 @@ const SceneCanvas = ({
         let startX = 0,
             startY = 0;
         let dragStartTime = 0;
-        let lastX = 0, lastY = 0;
+        let lastX = 0,
+            lastY = 0;
         function getPointerPos(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -479,10 +480,12 @@ const SceneCanvas = ({
                     // Assign velocity based on drag direction and speed
                     const dragEndTime = Date.now();
                     const dt = (dragEndTime - dragStartTime) / 1000; // seconds
-                    let vx = 0, vy = 0;
-                    if (dt > 0.04) { // Only if drag lasted at least 40ms
-                        vx = (lastX - startX) / dt * 0.04; // scale factor for feel
-                        vy = (lastY - startY) / dt * 0.04;
+                    let vx = 0,
+                        vy = 0;
+                    if (dt > 0.04) {
+                        // Only if drag lasted at least 40ms
+                        vx = ((lastX - startX) / dt) * 0.04; // scale factor for feel
+                        vy = ((lastY - startY) / dt) * 0.04;
                         // Clamp to same limits as animateObject
                         vx = Math.max(-1.8, Math.min(1.8, vx));
                         vy = Math.max(-1.2, Math.min(1.2, vy));
@@ -748,7 +751,7 @@ const SceneCanvas = ({
                                 alpha: 0.7 + Math.random() * 0.3,
                             });
                         }
-                    } else if (activeEffect === 'pooprain') {
+                    } else if (activeEffect === "pooprain") {
                         // Poop rain: spawn falling 💩 emojis
                         for (let i = 0; i < 24; i++) {
                             effectParticles.current.push({
@@ -843,7 +846,7 @@ const SceneCanvas = ({
                             p.vx = -0.3 + Math.random() * 0.6;
                         }
                     }
-                } else if (activeEffect === 'pooprain') {
+                } else if (activeEffect === "pooprain") {
                     ctx.save();
                     for (const p of effectParticles.current) {
                         p.y += p.vy;
@@ -862,9 +865,9 @@ const SceneCanvas = ({
                         ctx.translate(p.x, p.y);
                         ctx.rotate(p.rot);
                         ctx.font = `${p.size}px sans-serif`;
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText('💩', 0, 0);
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillText("💩", 0, 0);
                         ctx.restore();
                     }
                     ctx.restore();
@@ -1014,6 +1017,11 @@ const SceneCanvas = ({
         { id: "flower", label: "Flower", emoji: "🌸" },
         { id: "unicorn", label: "Unicorn", emoji: "🦄" },
         { id: "poop", label: "Poop", emoji: "💩" },
+        { id: "ribbon", label: "ribbon", emoji: "👟" },
+        { id: "glove", label: "Glove", emoji: "🧤" },
+        { id: "sneaker", label: "Sneaker", emoji: "👟" },
+        { id: "crown", label: "Crown", emoji: "👑" },
+        { id: "pizza", label: "Pizza", emoji: "🍕" },
     ];
     const draggingStickerRef = useRef(null);
     // Handle sticker drag start
@@ -1312,4 +1320,3 @@ const SceneCanvas = ({
 };
 
 export default SceneCanvas;
-
