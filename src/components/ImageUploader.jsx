@@ -70,7 +70,7 @@ const ImageUploader = ({ onImageSelected, onLoading }) => {
         aria-label="Upload Image"
       >
         <span role="img" aria-label="upload" style={{ fontSize: 28 }}>📤</span>
-        Upload Image
+        + Kleurplaat
       </button>
     </div>
   );
