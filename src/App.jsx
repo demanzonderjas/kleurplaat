@@ -13,6 +13,7 @@ const BACKGROUNDS = [
         url: "https://static.vecteezy.com/system/resources/previews/002/127/582/non_2x/comic-background-with-rainbow-vector.jpg",
     },
     { label: "bos", url: "/backgrounds/forest.jpg" },
+    { label: "dok12", url: "/backgrounds/dok12.jpg" },
     { label: "ruimte", url: "/backgrounds/space.jpg" },
     { label: "mikki", url: "/backgrounds/kamer-mikki.jpg" },
 ];
@@ -87,11 +88,11 @@ function App() {
     const menuBtnPad = isMobile ? "4px 8px" : "6px 16px";
     const menuBtnRadius = isMobile ? 6 : 8;
     // Spacing for reset button and backgrounds/upload menu
-    const resetBtnTop = isMobile ? 8 : 18;
-    const resetBtnRight = isMobile ? 8 : 18;
     const bgMenuTop = isMobile ? 12 : 24;
     const bgMenuLeft = isMobile ? 8 : 18;
     const uploadBtnTop = bgMenuTop + (isMobile ? 44 : 56) + (isMobile ? 8 : 16);
+    const resetBtnRight = isMobile ? 8 : 18;
+    const resetBtnTop =bgMenuTop + (isMobile ? 44 : 0) + (isMobile ? 8 : 0); 
 
     return (
         <div style={{ width: "100vw", height: "100vh", margin: 0, padding: 0, overflow: "hidden", position: "relative" }}>
