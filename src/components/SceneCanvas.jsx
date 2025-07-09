@@ -372,6 +372,8 @@ const SceneCanvas = ({
         let pointerDown = false;
         let startX = 0,
             startY = 0;
+        let dragStartTime = 0;
+        let lastX = 0, lastY = 0;
         function getPointerPos(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -385,6 +387,9 @@ const SceneCanvas = ({
             const { px, py } = getPointerPos(e);
             startX = px;
             startY = py;
+            lastX = px;
+            lastY = py;
+            dragStartTime = Date.now();
             const objW = Math.min(canvas.width, canvas.height) / 4;
             const objH = objW;
             for (let i = objStates.current.length - 1; i >= 0; i--) {
@@ -403,6 +408,8 @@ const SceneCanvas = ({
         function handleMove(e) {
             if (!pointerDown) return;
             const { px, py } = getPointerPos(e);
+            lastX = px;
+            lastY = py;
             // If pointer moved more than a threshold, consider it a drag
             if (Math.abs(px - startX) > 5 || Math.abs(py - startY) > 5) {
                 dragHappenedRef.current = true;
@@ -422,7 +429,7 @@ const SceneCanvas = ({
         }
         function handleUp() {
             pointerDown = false;
-            // If an object was dragged, give it a new random velocity
+            // If an object was dragged, give it a new velocity based on drag direction
             if (draggingRef.current && draggingRef.current.index !== null) {
                 const i = draggingRef.current.index;
                 const state = objStates.current[i];
@@ -458,9 +465,19 @@ const SceneCanvas = ({
                         draggingRef.current = { index: null, offsetX: 0, offsetY: 0 };
                         return;
                     }
-                    // Assign new random velocity and angular velocity
-                    state.vx = (Math.random() - 0.5) * 3.5;
-                    state.vy = (Math.random() - 0.5) * 2.5;
+                    // Assign velocity based on drag direction and speed
+                    const dragEndTime = Date.now();
+                    const dt = (dragEndTime - dragStartTime) / 1000; // seconds
+                    let vx = 0, vy = 0;
+                    if (dt > 0.04) { // Only if drag lasted at least 40ms
+                        vx = (lastX - startX) / dt * 0.04; // scale factor for feel
+                        vy = (lastY - startY) / dt * 0.04;
+                        // Clamp to same limits as animateObject
+                        vx = Math.max(-1.8, Math.min(1.8, vx));
+                        vy = Math.max(-1.2, Math.min(1.2, vy));
+                    }
+                    state.vx = vx;
+                    state.vy = vy;
                     state.vAngle = (Math.random() - 0.5) * 0.01;
                 }
             }
