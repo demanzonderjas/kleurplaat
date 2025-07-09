@@ -117,10 +117,15 @@ const SceneCanvas = ({
         { id: "sparkles", label: "glitters", emoji: "✨" },
         { id: "confetti", label: "confetti", emoji: "🎉" },
         { id: "snow", label: "sneeuw", emoji: "❄️" },
+        { id: "pooprain", label: "poep!", emoji: "💩" },
     ];
     const [activeEffect, setActiveEffect] = React.useState(null); // effect id
     // Effect particles state
     const effectParticles = useRef([]); // array of {x, y, vx, vy, ...}
+    // Sticker drag state (move this up)
+    const [draggingSticker, setDraggingSticker] = React.useState(null); // { sticker, x, y }
+    // Add a flag to freeze animation when dragging a sticker
+    const freezeObjects = !!draggingSticker;
 
     // Load the selected background image when background changes
     useEffect(() => {
@@ -465,15 +470,6 @@ const SceneCanvas = ({
                 h: 60, // menu height
             };
             // Bin (bottom right)
-            const BIN_SIZE = 80;
-            const BIN_MARGIN_X = 120;
-            const BIN_MARGIN_Y = 120;
-            const binRect = {
-                x: width - BIN_SIZE - BIN_MARGIN_X,
-                y: height - BIN_SIZE - BIN_MARGIN_Y,
-                w: BIN_SIZE,
-                h: BIN_SIZE,
-            };
             // Backgrounds menu (top center)
             const bgMenuW = 420,
                 bgMenuH = 56;
@@ -563,21 +559,6 @@ const SceneCanvas = ({
                 }
                 state.vy *= -1;
                 bouncedY = true;
-            }
-            // --- Bounce off bin ---
-            if (
-                state.x < binRect.x + binRect.w &&
-                state.x + objW > binRect.x &&
-                state.y < binRect.y + binRect.h &&
-                state.y + objH > binRect.y
-            ) {
-                if (state.x + objW / 2 < binRect.x + binRect.w / 2) {
-                    state.x = binRect.x - objW;
-                } else {
-                    state.x = binRect.x + binRect.w;
-                }
-                state.vx *= -1;
-                bouncedX = true;
             }
             // --- Bounce off backgrounds menu ---
             if (
@@ -678,11 +659,24 @@ const SceneCanvas = ({
                                 alpha: 0.7 + Math.random() * 0.3,
                             });
                         }
+                    } else if (activeEffect === 'pooprain') {
+                        // Poop rain: spawn falling 💩 emojis
+                        for (let i = 0; i < 24; i++) {
+                            effectParticles.current.push({
+                                x: Math.random() * w,
+                                y: Math.random() * -h,
+                                vy: 2.2 + Math.random() * 2.2,
+                                size: 32 + Math.random() * 24,
+                                rot: Math.random() * Math.PI * 2,
+                                vrot: (Math.random() - 0.5) * 0.04,
+                                alpha: 0.92 + Math.random() * 0.08,
+                            });
+                        }
                     }
                 }
                 // Animate and draw particles
-                for (const p of effectParticles.current) {
-                    if (activeEffect === "bubbles") {
+                if (activeEffect === "bubbles") {
+                    for (const p of effectParticles.current) {
                         p.y += p.vy;
                         p.alpha -= 0.0015;
                         ctx.save();
@@ -700,7 +694,9 @@ const SceneCanvas = ({
                             p.vy = -1.2 - Math.random() * 1.2;
                             p.alpha = 0.5 + Math.random() * 0.5;
                         }
-                    } else if (activeEffect === "sparkles") {
+                    }
+                } else if (activeEffect === "sparkles") {
+                    for (const p of effectParticles.current) {
                         p.x += p.vx;
                         p.y += p.vy;
                         p.t += 0.2;
@@ -718,7 +714,9 @@ const SceneCanvas = ({
                             p.y = Math.random() * canvas.height;
                             p.t = Math.random() * Math.PI * 2;
                         }
-                    } else if (activeEffect === "confetti") {
+                    }
+                } else if (activeEffect === "confetti") {
+                    for (const p of effectParticles.current) {
                         p.x += p.vx;
                         p.y += p.vy;
                         p.angle += p.spin;
@@ -735,7 +733,9 @@ const SceneCanvas = ({
                             p.vx = -1 + Math.random() * 2;
                             p.angle = Math.random() * Math.PI * 2;
                         }
-                    } else if (activeEffect === "snow") {
+                    }
+                } else if (activeEffect === "snow") {
+                    for (const p of effectParticles.current) {
                         p.x += p.vx;
                         p.y += p.vy;
                         ctx.save();
@@ -754,19 +754,47 @@ const SceneCanvas = ({
                             p.vx = -0.3 + Math.random() * 0.6;
                         }
                     }
+                } else if (activeEffect === 'pooprain') {
+                    ctx.save();
+                    for (const p of effectParticles.current) {
+                        p.y += p.vy;
+                        p.rot += p.vrot;
+                        if (p.y > canvas.height + 40) {
+                            p.x = Math.random() * canvas.width;
+                            p.y = Math.random() * -60;
+                            p.vy = 2.2 + Math.random() * 2.2;
+                            p.size = 32 + Math.random() * 24;
+                            p.rot = Math.random() * Math.PI * 2;
+                            p.vrot = (Math.random() - 0.5) * 0.04;
+                            p.alpha = 0.92 + Math.random() * 0.08;
+                        }
+                        ctx.save();
+                        ctx.globalAlpha = p.alpha;
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(p.rot);
+                        ctx.font = `${p.size}px sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('💩', 0, 0);
+                        ctx.restore();
+                    }
+                    ctx.restore();
                 }
             }
             const objW = Math.min(canvas.width, canvas.height) / 4;
             const objH = objW;
             // Animate all objects (move, bounce, and handle collisions)
-            animateAllObjects(objStates.current, objW, objH);
+            if (!freezeObjects) {
+                animateAllObjects(objStates.current, objW, objH);
+            }
+            // When freezeObjects is true, do NOT animate any object, including individually below
             let highlightBin = false;
             for (let i = 0; i < objImgRefs.current.length; i++) {
                 const img = objImgRefs.current[i];
                 const state = objStates.current[i];
                 if (!img || !state) continue;
-                // Pause animation for dragged object
-                if (draggedIndex !== i) animateObject(state, objW, objH);
+                // Do not animate any object if freezeObjects is true
+                if (!freezeObjects && draggedIndex !== i) animateObject(state, objW, objH);
                 const { x, y, angle, stickers = [], uid } = state;
                 ctx.save();
                 ctx.translate(x + objW / 2, y + objH / 2);
@@ -840,7 +868,7 @@ const SceneCanvas = ({
             running = false;
             if (animationRef.current) cancelAnimationFrame(animationRef.current);
         };
-    }, [fillScreen, images, draggedIndex, binHighlighted, activeEffect]);
+    }, [fillScreen, images, draggedIndex, binHighlighted, activeEffect, freezeObjects]);
 
     // Responsive canvas size
     useEffect(() => {
@@ -860,7 +888,6 @@ const SceneCanvas = ({
     // Responsive UI scaling
     const isMobile = typeof window !== "undefined" && window.innerWidth < 700;
     // Sizes for menus/buttons
-    const menuFont = isMobile ? 13 : 18;
     const btnFont = isMobile ? 14 : 22;
     const btnPad = isMobile ? "4px 8px" : "6px 16px";
 
@@ -880,19 +907,9 @@ const SceneCanvas = ({
         { id: "hat", label: "Hat", emoji: "🎩" },
         { id: "glasses", label: "Glasses", emoji: "🕶️" },
         { id: "flower", label: "Flower", emoji: "🌸" },
-        // 10 more funny/expressive/silly emojis
-        { id: "sunglasses", label: "Cool", emoji: "😎" },
         { id: "unicorn", label: "Unicorn", emoji: "🦄" },
-        { id: "alien", label: "Alien", emoji: "👽" },
         { id: "poop", label: "Poop", emoji: "💩" },
-        { id: "clown", label: "Clown", emoji: "🤡" },
-        { id: "ghost", label: "Ghost", emoji: "👻" },
-        { id: "robot", label: "Robot", emoji: "🤖" },
-        { id: "tongue", label: "Tongue", emoji: "😛" },
-        { id: "party", label: "Party", emoji: "🥳" },
-        { id: "monkey", label: "Monkey", emoji: "🙈" },
     ];
-    const [draggingSticker, setDraggingSticker] = React.useState(null); // { sticker, x, y }
     const draggingStickerRef = useRef(null);
     // Handle sticker drag start
     function handleStickerMouseDown(sticker, e) {
@@ -1117,9 +1134,6 @@ const SceneCanvas = ({
                     userSelect: "none",
                 }}
             >
-                <span style={{ fontWeight: 600, color: "#0077ff", fontSize: menuFont, marginRight: isMobile ? 4 : 10 }}>
-                    Effects
-                </span>
                 {EFFECTS.map((effect) => (
                     <button
                         key={effect.id}

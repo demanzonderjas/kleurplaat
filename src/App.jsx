@@ -58,6 +58,15 @@ function App() {
     const uids = processedImages.map((obj) => (typeof obj === "object" && obj.uid ? obj.uid : genUID()));
     const stickersList = processedImages.map((obj) => (typeof obj === "object" && obj.stickers ? obj.stickers : []));
 
+    // Responsive UI scaling for menus
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 900;
+    const menuFont = isMobile ? 12 : 18;
+    const menuPad = isMobile ? "6px 10px" : "10px 24px";
+    const menuGap = isMobile ? 6 : 12;
+    const menuBtnFont = isMobile ? 12 : 18;
+    const menuBtnPad = isMobile ? "4px 8px" : "6px 16px";
+    const menuBtnRadius = isMobile ? 6 : 8;
+
     return (
         <div style={{ width: "100vw", height: "100vh", margin: 0, padding: 0, overflow: "hidden", position: "relative" }}>
             {/* Loader overlay */}
@@ -102,37 +111,38 @@ function App() {
             <div
                 style={{
                     position: "absolute",
-                    top: 12,
+                    top: isMobile ? 6 : 12,
                     left: "50%",
                     transform: "translateX(-50%)",
                     zIndex: 20,
                     display: "flex",
-                    gap: 12,
+                    gap: menuGap,
                     alignItems: "center",
                     background: "linear-gradient(90deg, #e0f7fa 0%, #b2ebf2 100%)",
                     border: "2px solid #0077ff",
                     borderRadius: 12,
-                    padding: "10px 24px",
+                    padding: menuPad,
                     boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
                     color: "#003366",
-                    fontSize: 18,
+                    fontSize: menuFont,
                     fontWeight: 500,
                 }}
             >
-                <span style={{ fontWeight: 600, color: "#0077ff" }}></span>
+                <span style={{ fontWeight: 600, color: "#0077ff", fontSize: menuFont }}></span>
                 {BACKGROUNDS.map((bg) => (
                     <button
                         key={bg.url}
                         style={{
                             border: background === bg.url ? "2px solid #0077ff" : "1px solid #90caf9",
-                            borderRadius: 8,
-                            padding: "6px 16px",
+                            borderRadius: menuBtnRadius,
+                            padding: menuBtnPad,
                             background: background === bg.url ? "#e3f2fd" : "#fff",
                             color: background === bg.url ? "#0077ff" : "#003366",
                             cursor: "pointer",
                             fontWeight: background === bg.url ? 700 : 500,
                             transition: "all 0.2s",
                             boxShadow: background === bg.url ? "0 2px 8px #90caf9" : "none",
+                            fontSize: menuBtnFont,
                         }}
                         onClick={() => setBackground(bg.url)}
                     >
@@ -143,14 +153,14 @@ function App() {
             <div
                 style={{
                     position: "absolute",
-                    top: 64,
+                    top: isMobile ? 44 : 64,
                     left: "50%",
                     transform: "translateX(-50%)",
                     zIndex: 10,
                     background: "linear-gradient(90deg, #fffde4 0%, #f1f8e9 100%)",
                     border: "2px solid #43a047",
                     borderRadius: 12,
-                    padding: "10px 24px",
+                    padding: menuPad,
                     boxShadow: "0 4px 16px rgba(67,160,71,0.10)",
                     color: "#1b5e20",
                     fontWeight: 500,
