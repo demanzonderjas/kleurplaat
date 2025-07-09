@@ -1003,10 +1003,11 @@ const SceneCanvas = ({
     const stickerMenuHeight = isMobile ? 48 : 72;
     const effectsMenuGap = isMobile ? 8 : 16;
     const bottomMargin = isMobile ? 16 : 32;
+    const effectsMenuHeight = 60; // Height of the effects menu button
 
     // Calculate menu positions so they never stack
-    const stickerMenuBottom = bottomMargin;
-    const effectsMenuBottom = stickerMenuBottom + stickerMenuHeight + effectsMenuGap;
+    const effectsMenuBottom = bottomMargin;
+    const stickerMenuBottom = effectsMenuBottom + effectsMenuGap + effectsMenuHeight;
 
     // Sticker palette (simple emoji for now)
     const STICKERS = [
@@ -1195,45 +1196,7 @@ const SceneCanvas = ({
                     background: "#222",
                 }}
             />
-            {/* Sticker palette UI */}
-            <div
-                style={{
-                    position: "absolute",
-                    left: 24,
-                    bottom: stickerMenuBottom,
-                    zIndex: 10,
-                    display: "flex",
-                    gap: isMobile ? 10 : 18,
-                    background: "rgba(255,255,255,0.85)",
-                    borderRadius: 18,
-                    padding: isMobile ? "6px 10px" : "12px 20px",
-                    boxShadow: "0 2px 12px #0002",
-                    alignItems: "center",
-                    userSelect: "none",
-                }}
-            >
-                {STICKERS.map((sticker) => (
-                    <span
-                        key={sticker.id}
-                        title={sticker.label}
-                        style={{
-                            fontSize: isMobile ? 24 : 36,
-                            cursor: "grab",
-                            filter:
-                                draggingSticker && draggingSticker.sticker.id === sticker.id ? "brightness(0.7)" : "none",
-                            transition: "filter 0.2s",
-                        }}
-                        onMouseDown={(e) => handleStickerMouseDown(sticker, e)}
-                        onTouchStart={(e) => handleStickerMouseDown(sticker, e)}
-                        role="button"
-                        tabIndex={0}
-                        aria-label={sticker.label}
-                    >
-                        {sticker.emoji}
-                    </span>
-                ))}
-            </div>
-            {/* Scene Effects Menu */}
+            {/* Scene Effects Menu (now at the bottom left) */}
             <div
                 style={{
                     position: "absolute",
@@ -1278,6 +1241,44 @@ const SceneCanvas = ({
                         <span style={{ fontSize: isMobile ? 18 : 28, marginRight: isMobile ? 2 : 6 }}>{effect.emoji}</span>{" "}
                         {effect.label}
                     </button>
+                ))}
+            </div>
+            {/* Sticker palette UI (now above effects menu) */}
+            <div
+                style={{
+                    position: "absolute",
+                    left: 24,
+                    bottom: stickerMenuBottom,
+                    zIndex: 10,
+                    display: "flex",
+                    gap: isMobile ? 10 : 18,
+                    background: "rgba(255,255,255,0.85)",
+                    borderRadius: 18,
+                    padding: isMobile ? "6px 10px" : "12px 20px",
+                    boxShadow: "0 2px 12px #0002",
+                    alignItems: "center",
+                    userSelect: "none",
+                }}
+            >
+                {STICKERS.map((sticker) => (
+                    <span
+                        key={sticker.id}
+                        title={sticker.label}
+                        style={{
+                            fontSize: isMobile ? 24 : 36,
+                            cursor: "grab",
+                            filter:
+                                draggingSticker && draggingSticker.sticker.id === sticker.id ? "brightness(0.7)" : "none",
+                            transition: "filter 0.2s",
+                        }}
+                        onMouseDown={(e) => handleStickerMouseDown(sticker, e)}
+                        onTouchStart={(e) => handleStickerMouseDown(sticker, e)}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={sticker.label}
+                    >
+                        {sticker.emoji}
+                    </span>
                 ))}
             </div>
             {/* Dragging sticker preview */}
