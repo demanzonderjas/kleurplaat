@@ -71,6 +71,7 @@ function createObjState(canvas, objW, objH) {
         vAngle: (Math.random() - 0.5) * 0.01,
         initialized: true,
         stickers: [], // array of { id, emoji, relX, relY, relAngle }
+        trail: [], // array of {x, y, angle}
     };
 }
 
@@ -91,6 +92,7 @@ const SceneCanvas = ({
     onRemove,
     uids = [],
 }) => {
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 700;
     const canvasRef = useRef();
     const bgImgRef = useRef(null);
     const objImgRefs = useRef([]); // array of Image objects
@@ -180,12 +182,17 @@ const SceneCanvas = ({
                         initialized: true,
                         stickers: JSON.parse(JSON.stringify(stickers)), // deep copy
                         uid,
+                        trail: [], // ensure new objects start with empty trail
                     };
                 } else {
                     state = createObjState(canvas, objW, objH);
                     state.uid = uid;
                     state.stickers = JSON.parse(JSON.stringify(stickers)); // deep copy
+                    state.trail = []; // ensure new objects start with empty trail
                 }
+            } else {
+                // Preserve trail for existing objects
+                state.trail = state.trail || [];
             }
             newStates.push(state);
         }
@@ -245,8 +252,8 @@ const SceneCanvas = ({
 
     // Bin icon (SVG path or emoji)
     const BIN_SIZE = 80;
-    const BIN_MARGIN_X = 120;
-    const BIN_MARGIN_Y = 120;
+    const BIN_MARGIN_X = isMobile ? 24 : 40;
+    const BIN_MARGIN_Y = isMobile ? 24 : 40;
     const BIN_TOUCH_EXTRA = -40; // smaller area for less forgiving bin collision
     const BIN_ICON = "🗑️"; // You can replace with a custom SVG if desired
 
@@ -508,33 +515,32 @@ const SceneCanvas = ({
             // Sticker palette (bottom left)
             const stickerMenuRect = {
                 x: 24,
-                y: height - 32 - 72, // bottom: 32, height: ~72
+                y: height - stickerMenuBottom - stickerMenuHeight,
                 w: 200, // palette width
-                h: 72, // palette height
+                h: stickerMenuHeight,
             };
             // Effects menu (left, above sticker palette)
             const effectsMenuRect = {
                 x: 24,
-                y: height - 130,
+                y: height - effectsMenuBottom - 60, // 60 = menu height
                 w: 320, // menu width (adjust as needed)
-                h: 60, // menu height
+                h: 60,
             };
-            // Bin (bottom right)
-            // Backgrounds menu (top center)
+            // Backgrounds menu (top left)
             const bgMenuW = 420,
                 bgMenuH = 56;
             const bgMenuRect = {
-                x: width / 2 - bgMenuW / 2,
-                y: 12,
+                x: 18, // bgMenuLeft from App.jsx (desktop), or 8 (mobile)
+                y: 12, // bgMenuTop
                 w: bgMenuW,
                 h: bgMenuH,
             };
-            // Upload button (top center, below backgrounds menu)
+            // Upload button (top left, below backgrounds menu)
             const uploadBtnW = 340,
                 uploadBtnH = 56;
             const uploadBtnRect = {
-                x: width / 2 - uploadBtnW / 2,
-                y: 64,
+                x: 18, // bgMenuLeft from App.jsx (desktop), or 8 (mobile)
+                y: 12 + bgMenuH + (isMobile ? 8 : 16), // bgMenuTop + bgMenuH + gap
                 w: uploadBtnW,
                 h: uploadBtnH,
             };
@@ -543,8 +549,8 @@ const SceneCanvas = ({
             state.vy += (Math.random() - 0.5) * 0.06;
             state.vAngle += (Math.random() - 0.5) * 0.0005;
             // Clamp speed
-            state.vx = Math.max(-3, Math.min(3, state.vx));
-            state.vy = Math.max(-2, Math.min(2, state.vy));
+            state.vx = Math.max(-1.8, Math.min(1.8, state.vx));
+            state.vy = Math.max(-1.2, Math.min(1.2, state.vy));
             state.vAngle = Math.max(-0.01, Math.min(0.01, state.vAngle));
             // Move
             state.x += state.vx;
@@ -642,6 +648,11 @@ const SceneCanvas = ({
             }
             if (bouncedX) playBounce();
             if (bouncedY) playBubble();
+
+            // --- Rainbow trail ---
+            if (!state.trail) state.trail = [];
+            state.trail.push({ x: state.x + objW / 2, y: state.y + objH / 2, angle: state.angle });
+            if (state.trail.length > 18) state.trail.shift();
         }
 
         function animateAllObjects(objStatesArr, objW, objH) {
@@ -845,7 +856,25 @@ const SceneCanvas = ({
                 if (!img || !state) continue;
                 // Do not animate any object if freezeObjects is true
                 if (!freezeObjects && draggedIndex !== i) animateObject(state, objW, objH);
-                const { x, y, angle, stickers = [], uid } = state;
+                const { x, y, angle, stickers = [], uid, trail = [] } = state;
+                // Draw rainbow trail
+                if (trail.length > 2) {
+                    const rainbow = ["#ff1744", "#ff9100", "#ffee00", "#00e676", "#2979ff", "#d500f9"];
+                    for (let t = 1; t < trail.length; t++) {
+                        const p0 = trail[t - 1];
+                        const p1 = trail[t];
+                        const seg = rainbow[(t - 1) % rainbow.length];
+                        ctx.save();
+                        ctx.globalAlpha = 0.18 + 0.5 * (t / trail.length);
+                        ctx.strokeStyle = seg;
+                        ctx.lineWidth = 8 - 6 * (1 - t / trail.length);
+                        ctx.beginPath();
+                        ctx.moveTo(p0.x, p0.y);
+                        ctx.lineTo(p1.x, p1.y);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
                 ctx.save();
                 ctx.translate(x + objW / 2, y + objH / 2);
                 ctx.rotate(angle);
@@ -936,8 +965,6 @@ const SceneCanvas = ({
     }, [fillScreen]);
 
     // Responsive UI scaling
-    const isMobile = typeof window !== "undefined" && window.innerWidth < 700;
-    // Sizes for menus/buttons
     const btnFont = isMobile ? 14 : 22;
     const btnPad = isMobile ? "4px 8px" : "6px 16px";
 
@@ -1252,3 +1279,4 @@ const SceneCanvas = ({
 };
 
 export default SceneCanvas;
+

@@ -36,6 +36,9 @@ const ImageUploader = ({ onImageSelected, onLoading }) => {
     }
   };
 
+  // Responsive UI scaling
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 700;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <input
@@ -54,22 +57,22 @@ const ImageUploader = ({ onImageSelected, onLoading }) => {
           color: '#333',
           border: '2px solid #ffb300',
           borderRadius: 16,
-          padding: '18px 40px',
-          fontSize: 24,
+          padding: isMobile ? '10px 18px' : '18px 40px',
+          fontSize: isMobile ? 16 : 24,
           fontWeight: 700,
           boxShadow: '0 4px 16px rgba(255,193,7,0.15)',
           cursor: 'pointer',
-          margin: '12px 0',
+          margin: isMobile ? '8px 0' : '12px 0',
           transition: 'background 0.2s, box-shadow 0.2s',
           outline: 'none',
           letterSpacing: 1,
           display: 'flex',
           alignItems: 'center',
-          gap: 12
+          gap: isMobile ? 6 : 12
         }}
         aria-label="Upload Image"
       >
-        <span role="img" aria-label="upload" style={{ fontSize: 28 }}>📤</span>
+        <span role="img" aria-label="upload" style={{ fontSize: isMobile ? 20 : 28 }}>📤</span>
         + Kleurplaat
       </button>
     </div>

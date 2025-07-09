@@ -86,6 +86,12 @@ function App() {
     const menuBtnFont = isMobile ? 12 : 18;
     const menuBtnPad = isMobile ? "4px 8px" : "6px 16px";
     const menuBtnRadius = isMobile ? 6 : 8;
+    // Spacing for reset button and backgrounds/upload menu
+    const resetBtnTop = isMobile ? 8 : 18;
+    const resetBtnRight = isMobile ? 8 : 18;
+    const bgMenuTop = isMobile ? 12 : 24;
+    const bgMenuLeft = isMobile ? 8 : 18;
+    const uploadBtnTop = bgMenuTop + (isMobile ? 44 : 56) + (isMobile ? 8 : 16);
 
     return (
         <div style={{ width: "100vw", height: "100vh", margin: 0, padding: 0, overflow: "hidden", position: "relative" }}>
@@ -94,15 +100,15 @@ function App() {
                 onClick={handleReset}
                 style={{
                     position: "absolute",
-                    top: isMobile ? 8 : 18,
-                    right: isMobile ? 8 : 18,
+                    top: resetBtnTop,
+                    right: resetBtnRight,
                     zIndex: 100,
                     background: "linear-gradient(90deg, #ffe082 0%, #ffd54f 100%)",
                     color: "#333",
                     border: "2px solid #ffb300",
                     borderRadius: 16,
                     padding: isMobile ? "8px 14px" : "12px 22px",
-                    fontSize: isMobile ? 22 : 32,
+                    fontSize: isMobile ? 16 : 22,
                     fontWeight: 700,
                     boxShadow: "0 2px 8px rgba(255,193,7,0.10)",
                     cursor: "pointer",
@@ -115,8 +121,68 @@ function App() {
                 aria-label="Reset scene"
                 title="Reset scene"
             >
-                <span role="img" aria-label="reset">🧹</span>
+                <span role="img" aria-label="reset" style={{ fontSize: isMobile ? 18 : 26 }}>🧹</span>
             </button>
+            {/* Backgrounds menu (top left) */}
+            <div
+                style={{
+                    position: "absolute",
+                    top: bgMenuTop,
+                    left: bgMenuLeft,
+                    zIndex: 20,
+                    display: "flex",
+                    gap: menuGap,
+                    alignItems: "center",
+                    background: "linear-gradient(90deg, #e0f7fa 0%, #b2ebf2 100%)",
+                    border: "2px solid #0077ff",
+                    borderRadius: 12,
+                    padding: menuPad,
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+                    color: "#003366",
+                    fontSize: menuFont,
+                    fontWeight: 500,
+                }}
+            >
+                <span style={{ fontWeight: 600, color: "#0077ff", fontSize: menuFont }}></span>
+                {BACKGROUNDS.map((bg) => (
+                    <button
+                        key={bg.url}
+                        style={{
+                            border: background === bg.url ? "2px solid #0077ff" : "1px solid #90caf9",
+                            borderRadius: menuBtnRadius,
+                            padding: menuBtnPad,
+                            background: background === bg.url ? "#e3f2fd" : "#fff",
+                            color: background === bg.url ? "#0077ff" : "#003366",
+                            cursor: "pointer",
+                            fontWeight: background === bg.url ? 700 : 500,
+                            transition: "all 0.2s",
+                            boxShadow: background === bg.url ? "0 2px 8px #90caf9" : "none",
+                            fontSize: menuBtnFont,
+                        }}
+                        onClick={() => setBackground(bg.url)}
+                    >
+                        {bg.label}
+                    </button>
+                ))}
+            </div>
+            {/* Upload button (below backgrounds menu, top left) */}
+            <div
+                style={{
+                    position: "absolute",
+                    top: uploadBtnTop,
+                    left: bgMenuLeft,
+                    zIndex: 10,
+                    background: "linear-gradient(90deg, #fffde4 0%, #f1f8e9 100%)",
+                    border: "2px solid #43a047",
+                    borderRadius: 12,
+                    padding: menuPad,
+                    boxShadow: "0 4px 16px rgba(67,160,71,0.10)",
+                    color: "#1b5e20",
+                    fontWeight: 500,
+                }}
+            >
+                <ImageUploader onImageSelected={handleImageSelected} onLoading={setLoading} />
+            </div>
             {/* Loader overlay */}
             {loading && (
                 <div
@@ -156,66 +222,6 @@ function App() {
           `}</style>
                 </div>
             )}
-            <div
-                style={{
-                    position: "absolute",
-                    top: isMobile ? 6 : 12,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    zIndex: 20,
-                    display: "flex",
-                    gap: menuGap,
-                    alignItems: "center",
-                    background: "linear-gradient(90deg, #e0f7fa 0%, #b2ebf2 100%)",
-                    border: "2px solid #0077ff",
-                    borderRadius: 12,
-                    padding: menuPad,
-                    boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-                    color: "#003366",
-                    fontSize: menuFont,
-                    fontWeight: 500,
-                }}
-            >
-                <span style={{ fontWeight: 600, color: "#0077ff", fontSize: menuFont }}></span>
-                {BACKGROUNDS.map((bg) => (
-                    <button
-                        key={bg.url}
-                        style={{
-                            border: background === bg.url ? "2px solid #0077ff" : "1px solid #90caf9",
-                            borderRadius: menuBtnRadius,
-                            padding: menuBtnPad,
-                            background: background === bg.url ? "#e3f2fd" : "#fff",
-                            color: background === bg.url ? "#0077ff" : "#003366",
-                            cursor: "pointer",
-                            fontWeight: background === bg.url ? 700 : 500,
-                            transition: "all 0.2s",
-                            boxShadow: background === bg.url ? "0 2px 8px #90caf9" : "none",
-                            fontSize: menuBtnFont,
-                        }}
-                        onClick={() => setBackground(bg.url)}
-                    >
-                        {bg.label}
-                    </button>
-                ))}
-            </div>
-            <div
-                style={{
-                    position: "absolute",
-                    top: isMobile ? 44 : 64,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    zIndex: 10,
-                    background: "linear-gradient(90deg, #fffde4 0%, #f1f8e9 100%)",
-                    border: "2px solid #43a047",
-                    borderRadius: 12,
-                    padding: menuPad,
-                    boxShadow: "0 4px 16px rgba(67,160,71,0.10)",
-                    color: "#1b5e20",
-                    fontWeight: 500,
-                }}
-            >
-                <ImageUploader onImageSelected={handleImageSelected} onLoading={setLoading} />
-            </div>
             <SceneCanvas
                 images={imageUrls}
                 fillScreen
