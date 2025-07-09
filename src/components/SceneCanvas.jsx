@@ -72,12 +72,17 @@ function createObjState(canvas, objW, objH) {
   };
 }
 
+const BUBBLE_SOUND = 'https://cdn.freesound.org/previews/193/193169_84709-lq.mp3';
+const BOUNCE_SOUND = 'https://cdn.freesound.org/previews/329/329944_5622625-lq.mp3';
+
 const SceneCanvas = ({ images = [], fillScreen, onProcessed, uploadedImage }) => {
   const canvasRef = useRef();
   const bgImgRef = useRef(null);
   const objImgRefs = useRef([]); // array of Image objects
   const animationRef = useRef();
   const objStates = useRef([]); // array of animation states
+  const bubbleAudioRef = useRef();
+  const bounceAudioRef = useRef();
 
   // Only load the background image once
   useEffect(() => {
@@ -115,11 +120,43 @@ const SceneCanvas = ({ images = [], fillScreen, onProcessed, uploadedImage }) =>
     }
   }, [images, fillScreen]);
 
+  // Prepare bubble sound
+  useEffect(() => {
+    if (!bubbleAudioRef.current) {
+      bubbleAudioRef.current = new window.Audio(BUBBLE_SOUND);
+      bubbleAudioRef.current.volume = 0.5;
+    }
+  }, []);
+
+  // Prepare bounce sound
+  useEffect(() => {
+    if (!bounceAudioRef.current) {
+      bounceAudioRef.current = new window.Audio(BOUNCE_SOUND);
+      bounceAudioRef.current.volume = 0.5;
+    }
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     let running = true;
     const maxAngle = Math.PI / 4; // 45 degrees
+
+    function playBubble() {
+      if (bubbleAudioRef.current) {
+        // Clone the audio node to allow overlapping sounds
+        const bubble = bubbleAudioRef.current.cloneNode();
+        bubble.volume = bubbleAudioRef.current.volume;
+        bubble.play().catch(() => {});
+      }
+    }
+    function playBounce() {
+      if (bounceAudioRef.current) {
+        const bounce = bounceAudioRef.current.cloneNode();
+        bounce.volume = bounceAudioRef.current.volume;
+        bounce.play().catch(() => {});
+      }
+    }
 
     function animateObject(state, objW, objH) {
       const width = canvas.width;
@@ -145,14 +182,20 @@ const SceneCanvas = ({ images = [], fillScreen, onProcessed, uploadedImage }) =>
         state.vAngle *= -1;
       }
       // Bounce off edges
+      let bouncedX = false;
+      let bouncedY = false;
       if (state.x < 0 || state.x > width - objW) {
         state.vx *= -1;
         state.x = Math.max(0, Math.min(width - objW, state.x));
+        bouncedX = true;
       }
       if (state.y < 0 || state.y > height - objH) {
         state.vy *= -1;
         state.y = Math.max(0, Math.min(height - objH, state.y));
+        bouncedY = true;
       }
+      if (bouncedX) playBounce();
+      if (bouncedY) playBubble();
     }
 
     function draw() {
