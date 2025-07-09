@@ -117,7 +117,7 @@ const SceneCanvas = ({
         { id: "sparkles", label: "glitters", emoji: "✨" },
         { id: "confetti", label: "confetti", emoji: "🎉" },
         { id: "snow", label: "sneeuw", emoji: "❄️" },
-        { id: "pooprain", label: "poep!", emoji: "💩" },
+        { id: "pooprain", label: "poep", emoji: "💩" },
     ];
     const [activeEffect, setActiveEffect] = React.useState(null); // effect id
     // Effect particles state
@@ -299,10 +299,10 @@ const SceneCanvas = ({
             }
         }
         canvas.addEventListener("click", handleClick, { passive: true });
-        canvas.addEventListener("touchstart", handleClick, { passive: true });
+        // Do NOT add handleClick to touchstart; touch is handled by drag logic
         return () => {
             canvas.removeEventListener("click", handleClick, { passive: true });
-            canvas.removeEventListener("touchstart", handleClick, { passive: true });
+            // No need to remove touchstart
         };
     }, [images, onDuplicate]);
 

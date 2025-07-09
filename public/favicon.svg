@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <rect width="96" height="96" rx="20" fill="#fff"/>
+  <!-- Blue pencil -->
+  <g>
+    <rect x="38" y="18" width="10" height="52" rx="3" fill="#2196f3" transform="rotate(-18 43 44)"/>
+    <polygon points="38,18 43,6 48,18" fill="#1976d2"/>
+    <rect x="41" y="12" width="4" height="8" rx="1.5" fill="#ffe082"/>
+  </g>
+  <!-- Yellow pencil -->
+  <g>
+    <rect x="48" y="18" width="10" height="52" rx="3" fill="#ffeb3b" transform="rotate(18 53 44)"/>
+    <polygon points="58,18 53,6 48,18" fill="#fbc02d"/>
+    <rect x="51" y="12" width="4" height="8" rx="1.5" fill="#ffe082"/>
+  </g>
+  <!-- Red pencil -->
+  <g>
+    <rect x="28" y="18" width="10" height="52" rx="3" fill="#e53935" transform="rotate(-38 33 44)"/>
+    <polygon points="28,18 33,6 38,18" fill="#b71c1c"/>
+    <rect x="31" y="12" width="4" height="8" rx="1.5" fill="#ffe082"/>
+  </g>
+  <!-- Shadow for depth -->
+  <ellipse cx="48" cy="80" rx="24" ry="6" fill="#e0e0e0"/>
+</svg> 
