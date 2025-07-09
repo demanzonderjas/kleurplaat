@@ -1028,7 +1028,6 @@ const SceneCanvas = ({
         { id: "glove", label: "Glove", emoji: "🧤" },
         { id: "sneaker", label: "Sneaker", emoji: "👟" },
         { id: "crown", label: "Crown", emoji: "👑" },
-        { id: "pizza", label: "Pizza", emoji: "🍕" },
     ];
     const draggingStickerRef = useRef(null);
     // Handle sticker drag start
@@ -1219,6 +1218,7 @@ const SceneCanvas = ({
                     padding: isMobile ? "6px 10px" : "10px 24px",
                     boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
                     alignItems: "center",
+                    justifyContent: "center",
                     userSelect: "none",
                 }}
             >
@@ -1265,6 +1265,7 @@ const SceneCanvas = ({
                     padding: isMobile ? "6px 10px" : "12px 20px",
                     boxShadow: "0 2px 12px #0002",
                     alignItems: "center",
+                    justifyContent: "center",
                     userSelect: "none",
                 }}
             >
