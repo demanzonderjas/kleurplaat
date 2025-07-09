@@ -12,9 +12,9 @@ const BACKGROUNDS = [
         label: "regenboog",
         url: "https://static.vecteezy.com/system/resources/previews/002/127/582/non_2x/comic-background-with-rainbow-vector.jpg",
     },
-    { label: "bos", url: "/static/backgrounds/forest.jpg" },
-    { label: "ruimte", url: "/static/backgrounds/space.jpg" },
-    { label: "mikki", url: "/static/backgrounds/kamer-mikki.jpg" },
+    { label: "bos", url: "/backgrounds/forest.jpg" },
+    { label: "ruimte", url: "/backgrounds/space.jpg" },
+    { label: "mikki", url: "/backgrounds/kamer-mikki.jpg" },
 ];
 
 // Helper to generate a unique ID
