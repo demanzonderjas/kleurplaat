@@ -56,13 +56,12 @@ function processImage(image, callback) {
 function createObjState(canvas, objW, objH) {
   const width = canvas.width;
   const height = canvas.height;
-  const maxAngle = Math.PI / 4; // 45 degrees
   return {
     x: Math.random() * (width - objW),
     y: Math.random() * (height - objH),
     vx: (Math.random() - 0.5) * 3.5,
     vy: (Math.random() - 0.5) * 2.5,
-    angle: (Math.random() - 0.5) * 2 * maxAngle,
+    angle: (Math.random() - 0.5) * 2 * Math.PI / 4, // 45 degrees
     vAngle: (Math.random() - 0.5) * 0.01,
     initialized: true,
     stickers: [], // array of { id, emoji, relX, relY, relAngle }
@@ -409,7 +408,6 @@ const SceneCanvas = ({ images = [], fillScreen, onProcessed, uploadedImage, back
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     let running = true;
-    const maxAngle = Math.PI / 4; // 45 degrees
 
     function playBubble() {
       if (bubbleAudioRef.current) {
@@ -593,39 +591,9 @@ const SceneCanvas = ({ images = [], fillScreen, onProcessed, uploadedImage, back
     }
 
     function animateAllObjects(objStatesArr, objW, objH) {
-      // Move and bounce off walls/menus
+      // Move and bounce off walls/menus only
       for (let i = 0; i < objStatesArr.length; i++) {
         animateObject(objStatesArr[i], objW, objH);
-      }
-      // --- Elastic circle collision between objects ---
-      for (let i = 0; i < objStatesArr.length; i++) {
-        for (let j = i + 1; j < objStatesArr.length; j++) {
-          const a = objStatesArr[i];
-          const b = objStatesArr[j];
-          const ax = a.x + objW / 2, ay = a.y + objH / 2;
-          const bx = b.x + objW / 2, by = b.y + objH / 2;
-          const r = objW / 2;
-          const dx = bx - ax, dy = by - ay;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < r * 2 && dist > 0.01) {
-            // Overlap: separate them
-            const overlap = r * 2 - dist;
-            const nx = dx / dist, ny = dy / dist;
-            a.x -= nx * overlap / 2;
-            a.y -= ny * overlap / 2;
-            b.x += nx * overlap / 2;
-            b.y += ny * overlap / 2;
-            // Elastic bounce: swap velocities along collision normal
-            const va = a.vx * nx + a.vy * ny;
-            const vb = b.vx * nx + b.vy * ny;
-            const vaNew = vb;
-            const vbNew = va;
-            a.vx += (vaNew - va) * nx;
-            a.vy += (vaNew - va) * ny;
-            b.vx += (vbNew - vb) * nx;
-            b.vy += (vbNew - vb) * ny;
-          }
-        }
       }
     }
 
@@ -861,6 +829,22 @@ const SceneCanvas = ({ images = [], fillScreen, onProcessed, uploadedImage, back
     }
   }, [fillScreen]);
 
+  // Responsive UI scaling
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 700;
+  // Sizes for menus/buttons
+  const menuFont = isMobile ? 13 : 18;
+  const btnFont = isMobile ? 14 : 22;
+  const btnPad = isMobile ? '4px 8px' : '6px 16px';
+
+  // Layout constants for menu alignment
+  const stickerMenuHeight = isMobile ? 48 : 72;
+  const effectsMenuGap = isMobile ? 8 : 16;
+  const bottomMargin = isMobile ? 16 : 32;
+
+  // Calculate menu positions so they never stack
+  const stickerMenuBottom = bottomMargin;
+  const effectsMenuBottom = stickerMenuBottom + stickerMenuHeight + effectsMenuGap;
+
   // Sticker palette (simple emoji for now)
   const STICKERS = [
     { id: 'star', label: 'Star', emoji: '⭐️' },
@@ -1011,6 +995,18 @@ const SceneCanvas = ({ images = [], fillScreen, onProcessed, uploadedImage, back
     };
   }, [draggingSticker]);
 
+  // Ensure canvas always fits viewport and page never scrolls
+  React.useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.margin = '';
+      document.body.style.padding = '';
+    };
+  }, []);
+
   return (
     <div style={{ position: 'relative', width: fillScreen ? '100vw' : 500, height: fillScreen ? '100vh' : 400 }}>
       <canvas
@@ -1032,13 +1028,13 @@ const SceneCanvas = ({ images = [], fillScreen, onProcessed, uploadedImage, back
       <div style={{
         position: 'absolute',
         left: 24,
-        bottom: 32,
+        bottom: stickerMenuBottom,
         zIndex: 10,
         display: 'flex',
-        gap: 18,
+        gap: isMobile ? 10 : 18,
         background: 'rgba(255,255,255,0.85)',
         borderRadius: 18,
-        padding: '12px 20px',
+        padding: isMobile ? '6px 10px' : '12px 20px',
         boxShadow: '0 2px 12px #0002',
         alignItems: 'center',
         userSelect: 'none',
@@ -1048,7 +1044,7 @@ const SceneCanvas = ({ images = [], fillScreen, onProcessed, uploadedImage, back
             key={sticker.id}
             title={sticker.label}
             style={{
-              fontSize: 36,
+              fontSize: isMobile ? 24 : 36,
               cursor: 'grab',
               filter: draggingSticker && draggingSticker.sticker.id === sticker.id ? 'brightness(0.7)' : 'none',
               transition: 'filter 0.2s',
@@ -1067,31 +1063,32 @@ const SceneCanvas = ({ images = [], fillScreen, onProcessed, uploadedImage, back
       <div style={{
         position: 'absolute',
         left: 24,
-        bottom: 130,
+        bottom: effectsMenuBottom,
         zIndex: 20,
         display: 'flex',
         flexDirection: 'row',
-        gap: 12,
+        gap: isMobile ? 6 : 12,
         background: 'linear-gradient(90deg, #e0f7fa 0%, #b2ebf2 100%)',
         border: '2px solid #0077ff',
         borderRadius: 12,
-        padding: '10px 24px',
+        padding: isMobile ? '6px 10px' : '10px 24px',
         boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
         alignItems: 'center',
         userSelect: 'none',
       }}>
+        <span style={{ fontWeight: 600, color: '#0077ff', fontSize: menuFont, marginRight: isMobile ? 4 : 10 }}>Effects</span>
         {EFFECTS.map(effect => (
           <button
             key={effect.id}
             style={{
               border: activeEffect === effect.id ? '2px solid #0077ff' : '1px solid #90caf9',
               borderRadius: 8,
-              padding: '6px 16px',
+              padding: btnPad,
               background: activeEffect === effect.id ? '#e3f2fd' : '#fff',
               color: activeEffect === effect.id ? '#0077ff' : '#003366',
               cursor: 'pointer',
               fontWeight: activeEffect === effect.id ? 700 : 500,
-              fontSize: 22,
+              fontSize: btnFont,
               transition: 'all 0.2s',
               boxShadow: activeEffect === effect.id ? '0 2px 8px #90caf9' : 'none',
               outline: 'none',
@@ -1103,7 +1100,7 @@ const SceneCanvas = ({ images = [], fillScreen, onProcessed, uploadedImage, back
             }}
             aria-label={effect.label}
           >
-            <span style={{ fontSize: 28, marginRight: 6 }}>{effect.emoji}</span> {effect.label}
+            <span style={{ fontSize: isMobile ? 18 : 28, marginRight: isMobile ? 2 : 6 }}>{effect.emoji}</span> {effect.label}
           </button>
         ))}
       </div>
