@@ -53,8 +53,25 @@ function App() {
         setProcessedImages((prev) => prev.filter((obj) => obj.uid !== uid));
     }, []);
 
+    // Add reset sound
+    const RESET_SOUND = "https://cdn.freesound.org/previews/552/552050_7805242-lq.mp3";
+    const resetAudioRef = React.useRef();
+    React.useEffect(() => {
+        resetAudioRef.current = new window.Audio(RESET_SOUND);
+        resetAudioRef.current.volume = 0.7;
+    }, []);
     // Add reset button handler
-    const handleReset = () => setProcessedImages([]);
+    const handleReset = () => {
+        setProcessedImages([]);
+        if (resetAudioRef.current) {
+            try {
+                resetAudioRef.current.currentTime = 0;
+                resetAudioRef.current.play();
+            } catch {
+                // Ignore play errors (e.g., user gesture required)
+            }
+        }
+    };
 
     // Convert processedImages to the format SceneCanvas expects (array of image URLs)
     const imageUrls = processedImages.map((obj) => (typeof obj === "string" ? obj : obj.img));
