@@ -299,10 +299,60 @@ const SceneCanvas = ({
             }
         }
         canvas.addEventListener("click", handleClick, { passive: true });
-        // Do NOT add handleClick to touchstart; touch is handled by drag logic
+        // Add tap-to-duplicate for touch devices
+        let touchStartTime = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        function handleTouchStart(e) {
+            if (e.touches && e.touches.length === 1) {
+                touchStartTime = Date.now();
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }
+        function handleTouchEnd(e) {
+            // Only trigger if it was a short tap (not a drag)
+            const dt = Date.now() - touchStartTime;
+            if (dt > 400) return; // too long, probably not a tap
+            if (dragHappenedRef.current) {
+                dragHappenedRef.current = false;
+                return;
+            }
+            const touch = e.changedTouches ? e.changedTouches[0] : null;
+            if (!touch) return;
+            const dx = Math.abs(touch.clientX - touchStartX);
+            const dy = Math.abs(touch.clientY - touchStartY);
+            if (dx > 12 || dy > 12) return; // moved too much, not a tap
+            // Duplicate logic (same as handleClick)
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            const px = x * scaleX;
+            const py = y * scaleY;
+            const objW = Math.min(canvas.width, canvas.height) / 4;
+            const objH = objW;
+            for (let i = objStates.current.length - 1; i >= 0; i--) {
+                const state = objStates.current[i];
+                if (!state) continue;
+                if (px >= state.x && px <= state.x + objW && py >= state.y && py <= state.y + objH) {
+                    onDuplicate &&
+                        onDuplicate(
+                            images[i],
+                            { x: px - objW / 2, y: py - objH / 2 },
+                            JSON.parse(JSON.stringify(state.stickers || []))
+                        );
+                    break;
+                }
+            }
+        }
+        canvas.addEventListener("touchstart", handleTouchStart, { passive: true });
+        canvas.addEventListener("touchend", handleTouchEnd, { passive: true });
         return () => {
             canvas.removeEventListener("click", handleClick, { passive: true });
-            // No need to remove touchstart
+            canvas.removeEventListener("touchstart", handleTouchStart, { passive: true });
+            canvas.removeEventListener("touchend", handleTouchEnd, { passive: true });
         };
     }, [images, onDuplicate]);
 
