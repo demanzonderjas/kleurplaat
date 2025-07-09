@@ -128,6 +128,17 @@ const SceneCanvas = ({
     const [draggingSticker, setDraggingSticker] = React.useState(null); // { sticker, x, y }
     // Add a flag to freeze animation when dragging a sticker
     const freezeObjects = !!draggingSticker;
+    // Sticker attach sound
+    const STICKER_ATTACH_SOUND = "https://cdn.freesound.org/previews/590/590536_129727-lq.mp3";
+    const stickerAttachAudioRef = useRef();
+
+    // Prepare sticker attach sound
+    useEffect(() => {
+        if (!stickerAttachAudioRef.current) {
+            stickerAttachAudioRef.current = new window.Audio(STICKER_ATTACH_SOUND);
+            stickerAttachAudioRef.current.volume = 0.7;
+        }
+    }, []);
 
     // Load the selected background image when background changes
     useEffect(() => {
@@ -1123,6 +1134,11 @@ const SceneCanvas = ({
                 // Debug: Track which object this sticker was added to
                 debugStickerRefs.current.push({ stickerId: stickerObj.id, objectUid: state.uid });
                 stuck = true;
+                // Play sticker attach sound
+                if (stickerAttachAudioRef.current) {
+                    stickerAttachAudioRef.current.currentTime = 0;
+                    stickerAttachAudioRef.current.play();
+                }
             }
             if (!stuck) {
                 // Sticker did not stick to any object, show fade-out preview then remove
