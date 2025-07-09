@@ -53,6 +53,9 @@ function App() {
         setProcessedImages((prev) => prev.filter((obj) => obj.uid !== uid));
     }, []);
 
+    // Add reset button handler
+    const handleReset = () => setProcessedImages([]);
+
     // Convert processedImages to the format SceneCanvas expects (array of image URLs)
     const imageUrls = processedImages.map((obj) => (typeof obj === "string" ? obj : obj.img));
     const uids = processedImages.map((obj) => (typeof obj === "object" && obj.uid ? obj.uid : genUID()));
@@ -69,6 +72,34 @@ function App() {
 
     return (
         <div style={{ width: "100vw", height: "100vh", margin: 0, padding: 0, overflow: "hidden", position: "relative" }}>
+            {/* Reset button (top right) */}
+            <button
+                onClick={handleReset}
+                style={{
+                    position: "absolute",
+                    top: isMobile ? 8 : 18,
+                    right: isMobile ? 8 : 18,
+                    zIndex: 100,
+                    background: "linear-gradient(90deg, #ffe082 0%, #ffd54f 100%)",
+                    color: "#333",
+                    border: "2px solid #ffb300",
+                    borderRadius: 16,
+                    padding: isMobile ? "8px 14px" : "12px 22px",
+                    fontSize: isMobile ? 22 : 32,
+                    fontWeight: 700,
+                    boxShadow: "0 2px 8px rgba(255,193,7,0.10)",
+                    cursor: "pointer",
+                    transition: "background 0.2s, box-shadow 0.2s",
+                    outline: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8
+                }}
+                aria-label="Reset scene"
+                title="Reset scene"
+            >
+                <span role="img" aria-label="reset">🧹</span>
+            </button>
             {/* Loader overlay */}
             {loading && (
                 <div
