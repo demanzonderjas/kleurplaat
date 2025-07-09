@@ -545,16 +545,16 @@ const SceneCanvas = ({
             // --- Menu bounds for collision ---
             // Sticker palette (bottom left)
             const stickerMenuRect = {
-                x: 24,
+                x: menuSideMargin,
                 y: height - stickerMenuBottom - stickerMenuHeight,
-                w: 200, // palette width
+                w: width - 2 * menuSideMargin,
                 h: stickerMenuHeight,
             };
             // Effects menu (left, above sticker palette)
             const effectsMenuRect = {
-                x: 24,
+                x: menuSideMargin,
                 y: height - effectsMenuBottom - 60, // 60 = menu height
-                w: 320, // menu width (adjust as needed)
+                w: width - 2 * menuSideMargin,
                 h: 60,
             };
             // Backgrounds menu (top left)
